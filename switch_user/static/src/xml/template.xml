@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<template>
+
+<t t-extend="UserMenu.Actions">
+    <t t-jquery="a[data-menu='logout']"  t-operation="after">
+        <div role="separator" class="dropdown-divider"/>
+        <a role="menuitem" href="#" data-menu="switch_user" class="dropdown-item">Switch User</a>
+    </t>
+</t>
+
+
+</template>
