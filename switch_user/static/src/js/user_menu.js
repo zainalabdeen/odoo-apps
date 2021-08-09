@@ -39,13 +39,11 @@ odoo.define("switch_user.UserMenu", function (require) {
               title: _t('Switch User'),
               buttons: [{text: _t('Switch'), classes: 'btn-primary', close: true, click: function () {
                   var new_user = this.$content.find('#login_user').val();
-                  console.log("**********",new_user);
                   return self._rpc({
                     route: '/switch_user/switch_user/',
                     params: {
                         user: new_user ,
-                        //password: c,
-                        
+                        //password: c, 
                     },
                 }).then(function (result) {
                   console.log("After>>>>>>>",result);
