@@ -27,9 +27,7 @@
         'security/group.xml',
         # 'security/ir.model.access.csv',
         'views/assets.xml',
-        'views/res_config_settings_views.xml',
-        'wizard/swich_user.xml',
-    ],
+        'views/res_config_settings_views.xml',    ],
     'qweb':[
         'static/src/xml/template.xml',
     ],
