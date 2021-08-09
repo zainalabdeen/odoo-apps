@@ -24,10 +24,10 @@
 
     # always loaded
     'data': [
+        'security/group.xml',
         # 'security/ir.model.access.csv',
         'views/assets.xml',
-        'views/views.xml',
-        'views/templates.xml',
+        'views/res_config_settings_views.xml',
         'wizard/swich_user.xml',
     ],
     'qweb':[
