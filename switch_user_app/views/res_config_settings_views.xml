@@ -65,7 +65,7 @@
     <menuitem id="menu_switch_user_general_settings"
         name="Switch User Setting"
         action="action_config_settings"
-        groups="switch_user.group_switch_user_setting"
+        groups="switch_user_app.group_switch_user_setting"
         web_icon="switch_user,static/description/icon.png"
 />
 </odoo>
