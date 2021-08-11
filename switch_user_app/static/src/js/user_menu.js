@@ -1,4 +1,4 @@
-odoo.define("switch_user.UserMenu", function (require) {
+odoo.define("switch_user_app.UserMenu", function (require) {
   "use strict";
 
   var core = require("web.core");

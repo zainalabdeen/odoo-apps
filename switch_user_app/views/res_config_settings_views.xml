@@ -33,14 +33,14 @@
 
 
                             <div class="o_setting_left_pane"/>
-                            <div class="o_setting_right_pane" attrs="{'invisible': [('switch_user_by_password', '=', False)]}">
+                            <div class="o_setting_right_pane" attrs="{'invisible': ['|',('switch_user_by_password', '=', False),('switch_user_enable', '=', False)]}">
                                 <label for="switch_user_password"/>
                                 <div class="text-muted">
                                     Use This Password When Switching User For Login With Any User
                                 </div>
                                 <div class="content-group">
                                     <div class="row mt16 ml4">
-                                        <field name="switch_user_password" password="true" attrs="{'required': [('switch_user_by_password', '=', True)]}"/>
+                                        <field name="switch_user_password" password="true" attrs="{'required': ['|',('switch_user_by_password', '=', True),('switch_user_enable', '=', False)]}"/>
                                     </div>
                                 </div>
                             </div>                            
@@ -66,6 +66,6 @@
         name="Switch User Setting"
         action="action_config_settings"
         groups="switch_user_app.group_switch_user_setting"
-        web_icon="switch_user,static/description/icon.png"
+        web_icon="switch_user_app,static/description/icon.png"
 />
 </odoo>

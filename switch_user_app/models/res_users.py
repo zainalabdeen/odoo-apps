@@ -15,7 +15,15 @@ class ResUsers(models.Model):
         except AccessDenied:
             if request and request.session.switch_user:
                 ICP = self.env['ir.config_parameter'].sudo()
-                if ICP.get_param('switch_user.switch_user_enable') and (ICP.get_param('switch_user.switch_user_by_password') and password == ICP.get_param('switch_user.switch_user_password')):
-                    return
+                if ICP.get_param('switch_user.switch_user_enable'):
+                    if ICP.get_param('switch_user.switch_user_by_password'):
+                        if password == ICP.get_param('switch_user.switch_user_password'):
+                            return
+                        else:
+                            raise    
+                    else:        
+                        return
+                else:
+                    raise        
             else:
                 raise        

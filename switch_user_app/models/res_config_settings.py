@@ -10,7 +10,7 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     switch_user_enable = fields.Boolean(string='Switch User Enable')
-    switch_user_by_password = fields.Boolean(string='Switch User By Passwor')
+    switch_user_by_password = fields.Boolean(string='Switch User By Password')
     switch_user_password = fields.Char(string='Switch User Password')
 
 
