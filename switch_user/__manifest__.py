@@ -1,27 +1,18 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "switch_user",
+    'name': "Switch User",
 
-    'summary': """
-        Short (1 phrase/line) summary of the module's purpose, used as
-        subtitle on modules listing or apps.openerp.com""",
+    'summary': """This Module Allow User To Login By Other User Without Logout And Login Again""",
 
     'description': """
-        Long description of module's purpose
+        Enable Switching User From Odoo Backend
     """,
-
-    'author': "My Company",
-    'website': "http://www.yourcompany.com",
-
-    # Categories can be used to filter modules in modules listing
-    # Check https://github.com/odoo/odoo/blob/12.0/odoo/addons/base/data/ir_module_category_data.xml
-    # for the full list
-    'category': 'Uncategorized',
+    'author': "Zain-Alabdin",
+    #'website': "http://www.yourcompany.com",
+    'category': 'Extra Tools',
     'version': '0.1',
-
     # any module necessary for this one to work correctly
     'depends': ['base','web'],
-
     # always loaded
     'data': [
         'security/group.xml',
@@ -35,4 +26,8 @@
     'demo': [
         'demo/demo.xml',
     ],
+    "images":  ['static/description/icon.png'],
+    'installable': True,
+    'application': True,
+    'license': "AGPL-3",
 }

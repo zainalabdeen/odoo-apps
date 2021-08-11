@@ -21,15 +21,26 @@
                                 </div>
                             </div>
 
-                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_left_pane" attrs="{'invisible': [('switch_user_enable', '=', False)]}">
+                                <field name="switch_user_by_password"/>
+                            </div>
                             <div class="o_setting_right_pane" attrs="{'invisible': [('switch_user_enable', '=', False)]}">
+                                <label for="switch_user_by_password"/>
+                                <div class="text-muted">
+                                    Allow You To specify Password For User Switch(If Not Check This, User Switch Will Be Without Password)
+                                </div>
+                            </div>
+
+
+                            <div class="o_setting_left_pane"/>
+                            <div class="o_setting_right_pane" attrs="{'invisible': [('switch_user_by_password', '=', False)]}">
                                 <label for="switch_user_password"/>
                                 <div class="text-muted">
                                     Use This Password When Switching User For Login With Any User
                                 </div>
                                 <div class="content-group">
                                     <div class="row mt16 ml4">
-                                        <field name="switch_user_password" password="true"/>
+                                        <field name="switch_user_password" password="true" attrs="{'required': [('switch_user_by_password', '=', True)]}"/>
                                     </div>
                                 </div>
                             </div>                            
@@ -50,8 +61,11 @@
         <field name="context">{'module' : 'switch_user'}</field>
     </record>
 
+
     <menuitem id="menu_switch_user_general_settings"
         name="Switch User Setting"
         action="action_config_settings"
-        groups="switch_user.group_switch_user_setting"/>
+        groups="switch_user.group_switch_user_setting"
+        web_icon="switch_user,static/description/icon.png"
+/>
 </odoo>
