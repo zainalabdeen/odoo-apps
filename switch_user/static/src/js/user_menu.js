@@ -31,7 +31,7 @@ odoo.define("switch_user.UserMenu", function (require) {
         var suggestions = _.map(users, function (user) {
           return {
             id: user.id,
-            value: user.name,
+            value: user.login,
             label: user.name,
           };
         });
@@ -48,7 +48,7 @@ odoo.define("switch_user.UserMenu", function (require) {
         callback: function () {
           let $optionsEl =
             '<div class="form-group">\
-             <label class="col-form-label"  for="login_user">Password</label>\
+             <label class="col-form-label"  for="login_user">User</label>\
               <input type="text" class="o_input o_user_switch_input" id="login_user" name="login_user"/> \
              </div>';
           let passwordEl =
@@ -64,14 +64,14 @@ odoo.define("switch_user.UserMenu", function (require) {
           $partner_input.select2({
             width: "100%",
             allowClear: true,
-            formatResult: function (item) {
-              return $("<span>").text(item.text).prepend("*");
-            },
+            //formatResult: function (item) {
+            //  return $(`<span>`).text(item.text);
+            //},
             query: function (query) {
-              self.searchUser(query.term, 20).then(function (users) {
+              self.searchUser(query.term, 30).then(function (users) {
                 query.callback({
                   results: _.map(users, function (user) {
-                    return _.extend(user, { text: user.label });
+                    return _.extend(user, { text: user.label});
                   }),
                 });
               });
@@ -84,33 +84,37 @@ odoo.define("switch_user.UserMenu", function (require) {
               {
                 text: _t("Switch"),
                 classes: "btn-primary",
-                close: true,
+                //close: true,
                 click: function () {
                   var new_user = this.$content.find("#login_user").val();
                   var password = this.$content.find("#password").val();
-                  var user_options = $(
-                    "select[name='login_user']:enabled option:not(:first)"
-                  );
-                  let user_option_value = user_options.filter(
-                    "[value =" + new_user + "]"
-                  );
-                  let params = {
-                    db: session.db,
-                    login: user_option_value.attr("login"),
-                    password: password,
-                  };
-                  return self
-                    ._rpc({
-                      route: "/web/switch_user/authenticate/",
-                      params,
-                    })
-                    .then(function (result) {
-                      if (!result.uid) {
-                        return $.Deferred().reject();
-                      } else {
-                        window.location = result["web.base.url"];
-                      }
+                  if (new_user && password){
+                    let params = {
+                      db: session.db,
+                      user:new_user ,
+                      password: password,
+                    };
+                    return self
+                      ._rpc({
+                        route: "/web/switch_user/authenticate/",
+                        params,
+                      })
+                      .then(function (result) {
+                        if (!result.uid) {
+                          return $.Deferred().reject();
+                        } else {
+                          window.location = result["web.base.url"];
+                        }
+                      }).fail(function () {
+                        self.do_warn(_t("Something Wrong Try Later!"));
+                      });
+                    }
+                    else{
+                      let msg = `${!new_user ? "Please Choose User!" : !password ? "Please Entere Password!" : ''}`;
+                      Dialog.alert(self, _t(msg), {
+                        title: _t('Inputs'),
                     });
+                    }
                 },
               },
               { text: _t("Discard"), close: true },

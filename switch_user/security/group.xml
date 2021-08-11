@@ -8,5 +8,9 @@
             <field name="name">Settings</field>
             <field name="category_id" ref="module_category_switch_user"/>
         </record>
+        <record id="group_switch_user_menu" model="res.groups">
+            <field name="name">Switch User</field>
+            <field name="category_id" ref="module_category_switch_user"/>
+        </record>
     </data>
 </odoo>
