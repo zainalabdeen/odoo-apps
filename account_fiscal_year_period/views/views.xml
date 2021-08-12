@@ -127,7 +127,7 @@
 
     <menuitem id="account_fiscal_year" name="Fiscal Years And Periods" parent="account.menu_finance_configuration" sequence="1" />
 
-    <menuitem id="menu_account_fiscal_year" action="account.actions_account_fiscal_year" parent="account_fiscal_year"  groups="account.group_fiscal_year" name="Fiscal Years"/>
+    <menuitem id="menu_account_account_fiscal_year" action="account.actions_account_fiscal_year" parent="account_fiscal_year"  groups="account.group_fiscal_year" name="Fiscal Years"/>
     <menuitem id="menu_action_account_fiscalyear" name="Fiscal Year Periods" action="action_account_fiscalyear" parent="account_fiscal_year"/>
   </data>
 </odoo>
