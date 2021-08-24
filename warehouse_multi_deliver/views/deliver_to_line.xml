@@ -10,21 +10,20 @@
                     <field name="multi_deliver"/>
                 </field>
                 <xpath expr="//notebook" position="inside">
-                    <page string="Reciept Lines">
-                        <field name="deliver_line_ids">
+                    <page string="Reciept Lines" attrs="{'invisible':[('multi_deliver','!=',True)]}">
+                        <field name="deliver_line_ids" attrs="{'readonly': [('state', 'in', ('done', 'cancel'))]}">
                             <tree string="Deliver To" editable="bottom">
-                                <field name="purchase_order_line" domain="[('id','in',parent.order_line)]"/>
+                                <field name="purchase_order_line" domain="[('id','in',parent.order_line),('product_type','!=','service')]"
+                                options='{"no_open": True, "no_create_edit": True}'/>
                                 <field name="name"/>
                                 <field name="product_id" readonly="1" force_save="1"/>
-                                <field name="requsted_qty" />
                                 <field name="picking_type_id" />
-                                <field name="qty_invoiced" readonly="1"/>
+                                <field name="requsted_qty" />
                                 <field name="qty_received" readonly="1"/>
                             </tree>  
                         </field>
                     </page>
                 </xpath>
-            
             </field>
             
         </record>

@@ -75,13 +75,13 @@
             <field name="name">account.fiscalyear.periods.tree</field>
             <field name="model">account.fiscalyear.periods</field>
             <field name="arch" type="xml">
-                <tree colors="blue:state == 'draft';green:state == 'open' " string="Fiscalyear">
+                <tree decoration-info="state == 'draft'" decoration-success="state == 'open'" string="Fiscalyear">
                     <field name="code"/>
                     <field name="fiscal_year_id"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                     <field name="state"/>
-                  <field name="date_start"/>
-                  <field name="date_stop"/>
+                    <field name="date_start"/>
+                    <field name="date_stop"/>
                 </tree>
             </field>
         </record>
@@ -106,7 +106,6 @@
             <record id="action_account_fiscalyear" model="ir.actions.act_window">
             <field name="name">Fiscal Years</field>
             <field name="res_model">account.fiscalyear.periods</field>
-            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="help" type="html">
                 <p class="oe_view_nocontent_create">

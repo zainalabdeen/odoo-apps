@@ -155,9 +155,8 @@ class AccountMonthPeriod(models.Model):
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    @api.multi
-    def _check_lock_date(self):
-        res = super(AccountMove, self)._check_lock_date()
+    def _check_fiscalyear_lock_date(self):
+        res = super(AccountMove, self)._check_fiscalyear_lock_date()
         if res:
             for rec in self:
                 fiscal_year_obj = self.env['account.fiscalyear.periods']

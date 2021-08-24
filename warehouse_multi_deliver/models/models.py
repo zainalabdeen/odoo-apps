@@ -15,11 +15,10 @@ from odoo.addons import decimal_precision as dp
 class PurchaseOrder(models.Model):
     _inherit = 'purchase.order'
 
-    multi_deliver = fields.Boolean(string="Separate Deliver Per Line")
-    deliver_line_ids = fields.One2many('deliver.to.line','order_id',copy=True)
+    multi_deliver = fields.Boolean(string="Separate Deliver Per Line",states=Purchase.READONLY_STATES)
+    deliver_line_ids = fields.One2many('deliver.to.line','order_id')
 
 
-    @api.multi
     def button_confirm(self):
         for order in self:
             if order.state not in ['draft', 'sent']:
@@ -36,12 +35,13 @@ class PurchaseOrder(models.Model):
                 order.write({'state': 'to approve'})          
         return True
 
-    @api.multi
     def _create_picking(self):
         StockPicking = self.env['stock.picking']
         if not self.multi_deliver:
             super(PurchaseOrder, self)._create_picking()
         else:
+            if not self.deliver_line_ids:
+                raise UserError(_("Please Add Receipt Lines"))
             for picking in self.deliver_line_ids.mapped('picking_type_id'):
                 if any([ptype in ['product', 'consu'] for ptype in self.deliver_line_ids.filtered(lambda s: s.picking_type_id.id== picking.id).mapped('product_id.type')]):
                     res = self._prepare_to_multi_picking(picking)
@@ -91,8 +91,7 @@ class DeliverToLine(models.Model):
     state = fields.Selection(related='order_id.state', store=True, readonly=False)
     move_ids = fields.One2many('stock.move', 'deliver_to_id', string='Reservation', readonly=True, ondelete='set null', copy=False)
     orderpoint_id = fields.Many2one('stock.warehouse.orderpoint', 'Orderpoint')
-    qty_invoiced = fields.Float(compute='_compute_qty_invoiced', string="Billed Qty", digits=dp.get_precision('Product Unit of Measure'), store=True)
-    qty_received = fields.Float(string="Received Qty", digits=dp.get_precision('Product Unit of Measure'), copy=False)
+    qty_received = fields.Float("Received Qty", compute='_compute_qty_received', compute_sudo=True, store=True, digits='Product Unit of Measure')
 
     @api.onchange('purchase_order_line')
     def _onchange_purchase_order_line(self):
@@ -100,20 +99,6 @@ class DeliverToLine(models.Model):
         self.name = self.purchase_order_line.name
 
 
-    @api.depends('purchase_order_line.invoice_lines','purchase_order_line.invoice_lines.invoice_id.state', 'purchase_order_line.invoice_lines.quantity')
-    def _compute_qty_invoiced(self):
-        for line in self:
-            qty = 0.0
-            for inv_line in line.purchase_order_line.invoice_lines:
-                if inv_line.invoice_id.state not in ['cancel']:
-                    if inv_line.invoice_id.type == 'in_invoice':
-                        qty += inv_line.uom_id._compute_quantity(inv_line.quantity, line.purchase_order_line.product_uom)
-                    elif inv_line.invoice_id.type == 'in_refund':
-                        qty -= inv_line.uom_id._compute_quantity(inv_line.quantity, line.purchase_order_line.product_uom)
-            line.qty_invoiced = qty
-
-
-    @api.multi
     def _prepare_stock_moves(self, picking):
         """ Prepare the stock moves data for one order line. This function returns a list of
         dictionary ready to be used in stock.move's create()
@@ -149,7 +134,6 @@ class DeliverToLine(models.Model):
             'origin': self.order_id.name,
             'route_ids': self.picking_type_id.warehouse_id and [(6, 0, [x.id for x in self.picking_type_id.warehouse_id.route_ids])] or [],
             'warehouse_id': self.picking_type_id.warehouse_id.id,
-            'description' : self.name or '',
         }
         diff_quantity = self.requsted_qty - qty
         if float_compare(diff_quantity, 0.0,  precision_rounding=self.purchase_order_line.product_uom.rounding) > 0:
@@ -166,7 +150,6 @@ class DeliverToLine(models.Model):
             res.append(template)
         return res
 
-    @api.multi
     def _create_stock_moves(self, picking):
         values = []
         for line in self:
@@ -174,36 +157,36 @@ class DeliverToLine(models.Model):
                 values.append(val)   
         return self.env['stock.move'].create(values)
 
-    def _update_received_qty(self):
+    @api.depends('move_ids.state', 'move_ids.product_uom_qty', 'move_ids.product_uom')
+    def _compute_qty_received(self):
         for line in self:
-            total = 0.0
-            # In case of a BOM in kit, the products delivered do not correspond to the products in
-            # the PO. Therefore, we can skip them since they will be handled later on.
-            for move in line.move_ids.filtered(lambda m: m.product_id == line.product_id \
-                and line.picking_type_id.default_location_dest_id in [m.location_dest_id,m.location_id]):
-                if move.state == 'done':
-                    if move.location_dest_id.usage == "supplier":
-                        if move.to_refund:
+                total = 0.0
+                # In case of a BOM in kit, the products delivered do not correspond to the products in
+                # the PO. Therefore, we can skip them since they will be handled later on.
+                for move in line.move_ids.filtered(lambda m: m.product_id == line.product_id):
+                    if move.state == 'done':
+                        if move.location_dest_id.usage == "supplier":
+                            if move.to_refund:
+                                total -= move.product_uom._compute_quantity(move.product_uom_qty, line.purchase_order_line.product_uom)
+                        elif move.origin_returned_move_id and move.origin_returned_move_id._is_dropshipped() and not move._is_dropshipped_returned():
+                            # Edge case: the dropship is returned to the stock, no to the supplier.
+                            # In this case, the received quantity on the PO is set although we didn't
+                            # receive the product physically in our stock. To avoid counting the
+                            # quantity twice, we do nothing.
+                            pass
+                        elif (
+                            move.location_dest_id.usage == "internal"
+                            and move.to_refund
+                            and move.location_dest_id
+                            not in self.env["stock.location"].search(
+                                [("id", "child_of", move.warehouse_id.view_location_id.id)]
+                            )
+                        ):
                             total -= move.product_uom._compute_quantity(move.product_uom_qty, line.purchase_order_line.product_uom)
-                    elif move.origin_returned_move_id._is_dropshipped() and not move._is_dropshipped_returned():
-                        # Edge case: the dropship is returned to the stock, no to the supplier.
-                        # In this case, the received quantity on the PO is set although we didn't
-                        # receive the product physically in our stock. To avoid counting the
-                        # quantity twice, we do nothing.
-                        pass
-                    else:
-                        total += move.product_uom._compute_quantity(move.product_uom_qty, line.purchase_order_line.product_uom)
-            line.qty_received = total
+                        else:
+                            total += move.product_uom._compute_quantity(move.product_uom_qty, line.purchase_order_line.product_uom)
+                line.qty_received = total
 
-    def _merge_in_existing_line(self, product_id, product_qty, product_uom, location_id, name, origin, values):
-        """ This function purpose is to be override with the purpose to forbide _run_buy  method
-        to merge a new po line in an existing one.
-        """
-        return True
-
-
-
-    @api.multi
     def _create_or_update_picking(self):
         for line in self:
             if line.product_id.type in ('product', 'consu'):
@@ -212,13 +195,13 @@ class DeliverToLine(models.Model):
                     raise UserError(_('You cannot decrease the ordered quantity below the received quantity.\n'
                                       'Create a return first.'))
 
-                if float_compare(line.requsted_qty, line.qty_invoiced, line.purchase_order_line.product_uom.rounding) == -1:
+                if float_compare(line.purchase_order_line.product_qty, line.purchase_order_line.qty_invoiced, line.purchase_order_line.product_uom.rounding) == -1:
                     # If the quantity is now below the invoiced quantity, create an activity on the vendor bill
                     # inviting the user to create a refund.
                     activity = self.env['mail.activity'].sudo().with_context(force_company=self.env.user.company_id.id, company_id=self.env.user.company_id.id).create({
                         'activity_type_id': self.env.ref('mail.mail_activity_data_todo').id,
                         'note': _('The quantities on your purchase order indicate less than billed. You should ask for a refund. '),
-                        'res_id': line.purchase_order_line.invoice_lines[0].invoice_id.id,
+                        'res_id': line.purchase_order_line.invoice_lines[0].move_id.id,
                         'res_model_id': self.env.ref('account.model_account_invoice').id,
                     })
                     activity._onchange_activity_type_id()
@@ -243,7 +226,6 @@ class DeliverToLine(models.Model):
             line._create_or_update_picking()
         return line
 
-    @api.multi
     def write(self, values):
         result = super(DeliverToLine, self).write(values)
         # Update expected date of corresponding moves
@@ -276,28 +258,18 @@ class PurchaseOrderLine(models.Model):
             if not line.order_id.multi_deliver:
                 line._create_or_update_picking()
         return line
-
-    @api.multi
+        
     def write(self, values):
         result = super(PurchaseOrderLine, self).write(values)
-        # Update expected date of corresponding moves
-        if 'date_planned' in values:
-            self.env['stock.move'].search([
-                ('purchase_line_id', 'in', self.ids), ('state', '!=', 'done')
-            ]).write({'date_expected': values['date_planned']})
         if 'product_qty' in values:
-            if not self.order_id.multi_deliver:
-                self.filtered(lambda l: l.order_id.state == 'purchase')._create_or_update_picking()
-            #elif self.deliver_line_ids and self.product_qty !=  sum(self.deliver_line_ids.mapped('requsted_qty')):
-            #    raise UserError(_("Line Qty Must Equal Deliver To Qty %s") % sum(self.deliver_line_ids.mapped('requsted_qty')))
-        return result
+            if self.order_id.multi_deliver and self.deliver_line_ids and self.product_qty <  sum(self.deliver_line_ids.mapped('requsted_qty')):
+               raise UserError(_("Line Qty Can't Be Less Than Deliver To Qty %s") % sum(self.deliver_line_ids.mapped('requsted_qty')))
+        return result        
 
-
-    @api.multi
     def _create_or_update_picking(self):
         for line in self:
             if not line.order_id.multi_deliver:
-                if line.product_id.type in ('product', 'consu'):
+                if line.product_id and line.product_id.type in ('product', 'consu'):
                     # Prevent decreasing below received quantity
                     if float_compare(line.product_qty, line.qty_received, line.product_uom.rounding) < 0:
                         raise UserError(_('You cannot decrease the ordered quantity below the received quantity.\n'
@@ -307,10 +279,10 @@ class PurchaseOrderLine(models.Model):
                         # If the quantity is now below the invoiced quantity, create an activity on the vendor bill
                         # inviting the user to create a refund.
                         activity = self.env['mail.activity'].sudo().create({
-                            'activity_type_id': self.env.ref('mail.mail_activity_data_todo').id,
+                            'activity_type_id': self.env.ref('mail.mail_activity_data_warning').id,
                             'note': _('The quantities on your purchase order indicate less than billed. You should ask for a refund. '),
-                            'res_id': line.invoice_lines[0].invoice_id.id,
-                            'res_model_id': self.env.ref('account.model_account_invoice').id,
+                            'res_id': line.invoice_lines[0].move_id.id,
+                            'res_model_id': self.env.ref('account.model_account_move').id,
                         })
                         activity._onchange_activity_type_id()
 
@@ -326,25 +298,11 @@ class PurchaseOrderLine(models.Model):
                             .create(move_val)\
                             ._action_confirm()\
                             ._action_assign()
-                        
 
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
     deliver_to_id = fields.Many2one('deliver.to.line')
-
-
-    def _action_done(self):
-        res = super(StockMove, self)._action_done()
-        self.mapped('deliver_to_id').sudo()._update_received_qty()
-        return res
-
-    def write(self, vals):
-        res = super(StockMove, self).write(vals)
-        if 'product_uom_qty' in vals:
-            self.filtered(lambda m: m.state == 'done' and m.deliver_to_id).mapped(
-                'deliver_to_id').sudo()._update_received_qty()
-        return res
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
