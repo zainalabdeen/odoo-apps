@@ -28,13 +28,13 @@
                         </group>
                         <notebook>
                             <page string="Periods">
-                                <field colspan="4" name="period_ids" nolabel="1" widget="one2many_list">
+                                <field colspan="4" name="period_ids" nolabel="1" widget="one2many_list" attrs="{'readonly':[('state','!=','open')]}">
                                     <tree colors="blue:parent.state == 'draft';green:special==True;gray:special !=true"  string="Period" editable="bottom" create="false" delete="false">
                                             <field name="sequence" readonly="1"/>
                                             <field name="code" readonly="1"/>
                                             <field name="date_start" readonly="1"/>
                                             <field name="date_stop" readonly="1"/>
-                                            <field name="special"/>
+                                            <field name="special" groups="account_fiscal_year_period.group_fiscal_year_open_close"/>
                                     </tree>
                                 </field>
                                 </page>
