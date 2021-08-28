@@ -20,7 +20,7 @@
               <field name="name">Open/Close Month</field>
               <field name="category_id" ref="module_category_fiscal_year"/>
           </record>
-          <record id="account.group_fiscal_year" model="res.groups">
+          <record id="account_accountant.group_fiscal_year" model="res.groups">
               <field name="category_id" ref="module_category_fiscal_year"/>
           </record>
           
