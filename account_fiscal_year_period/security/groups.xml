@@ -8,12 +8,10 @@
         </record>
           <record id="group_fiscal_year_create" model="res.groups">
               <field name="name">Create Periods</field>
-              <field name="comment"></field>
               <field name="category_id" ref="module_category_fiscal_year"/>
           </record>
           <record id="group_fiscal_year_close" model="res.groups">
               <field name="name">Close Period</field>
-              <field name="comment"></field>
               <field name="category_id" ref="module_category_fiscal_year"/>
           </record>
           <record id="group_fiscal_year_open_close" model="res.groups">

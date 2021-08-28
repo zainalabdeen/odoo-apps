@@ -16,31 +16,14 @@ class PurchaseOrder(models.Model):
     multi_deliver = fields.Boolean(string="Separate Deliver Per Line",states=Purchase.READONLY_STATES)
     deliver_line_ids = fields.One2many('deliver.to.line','order_id',copy=False)
 
-
-    @api.multi
-    def button_confirm(self):
-        for order in self:
-            if order.state not in ['draft', 'sent']:
-                continue
-            order._add_supplier_to_product()
-            # Deal with double validation process
-            if order.company_id.po_double_validation == 'one_step'\
-                    or (order.company_id.po_double_validation == 'two_step'\
-                        and order.amount_total < self.env.user.company_id.currency_id._convert(
-                            order.company_id.po_double_validation_amount, order.currency_id, order.company_id, order.date_order or fields.Date.today()))\
-                    or order.user_has_groups('purchase.group_purchase_manager'):
-                order.button_approve()
-            else:
-                order.write({'state': 'to approve'})          
-        return True
-
     @api.multi
     def _create_picking(self):
         StockPicking = self.env['stock.picking']
         if not self.multi_deliver:
             super(PurchaseOrder, self)._create_picking()
         else:
-            if not self.deliver_line_ids:
+            if any([ptype in ['product', 'consu'] for ptype in self.order_line.mapped('product_id.type')]) \
+            and not self.deliver_line_ids:
                 raise UserError(_("Please Add Receipt Lines"))
             for picking in self.deliver_line_ids.mapped('picking_type_id'):
                 if any([ptype in ['product', 'consu'] for ptype in self.deliver_line_ids.filtered(lambda s: s.picking_type_id.id== picking.id).mapped('product_id.type')]):
