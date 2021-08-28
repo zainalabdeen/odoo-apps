@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Account Fiscal Year Period",
+    'name': "Account Fiscal Year Period Comunity",
 
     'summary': """
     Create periods Of Fiscal Year Per Month ,With Ability To Open/Close Each Month
@@ -25,6 +25,7 @@
     'data': [
         'security/groups.xml',
         'security/ir.model.access.csv',
+        'views/fiscal_year.xml',
         'views/views.xml',
         'data/account_fiscal_sequence.xml'
     ],

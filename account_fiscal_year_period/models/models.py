@@ -10,17 +10,16 @@ class AccountFiscalyear(models.Model):
     _description = "Fiscal Year"
     _rec_name = 'fiscal_year_id'
 
-    fiscal_year_id = fields.Many2one('account.fiscal.year',required=True, track_visibility='onchange')
-    code = fields.Char('Code',required=True, track_visibility='onchange',default='/',readonly=True)
-    company_id = fields.Many2one('res.company',related='fiscal_year_id.company_id',store=True, required=True,
-                                 default=lambda self: self.env.user.company_id, track_visibility='onchange')
-    date_start = fields.Date('Start Date',related='fiscal_year_id.date_from',store=True, track_visibility='onchange')
-    date_stop = fields.Date('Ending Date',related='fiscal_year_id.date_to',store=True, track_visibility='onchange')
-    period_ids = fields.One2many('account.month.period', 'fiscalyear_id', 'Periods', track_visibility='onchange')
+    fiscal_year_id = fields.Many2one('account.fiscal.year',required=True, tracking=True)
+    code = fields.Char('Code',required=True, tracking=True,default='/',readonly=True)
+    company_id = fields.Many2one('res.company',related='fiscal_year_id.company_id',store=True,tracking=True)
+    date_start = fields.Date('Start Date',related='fiscal_year_id.date_from',store=True, tracking=True)
+    date_stop = fields.Date('Ending Date',related='fiscal_year_id.date_to',store=True, tracking=True)
+    period_ids = fields.One2many('account.month.period', 'fiscalyear_id', 'Periods', tracking=True)
     state = fields.Selection(
         [('draft', 'Draft'),
          ('open', 'Open'),('done', 'Closed')],
-        'Status', readonly=True, default='draft', track_visibility='onchange')
+        'Status', readonly=True, default='draft', tracking=True)
     comments = fields.Text('Comments')
 
     @api.onchange('fiscal_year_id')
@@ -122,11 +121,11 @@ class AccountMonthPeriod(models.Model):
     _order = "date_start asc"
 
     sequence = fields.Integer('Period Sequence', default=1)
-    code = fields.Char('Code', size=14, track_visibility='onchange')
-    special = fields.Boolean('Opening/Closing Period', track_visibility='onchange')
-    date_start = fields.Date('From', required=True, track_visibility='onchange')
-    date_stop = fields.Date('To', required=True, track_visibility='onchange')
-    fiscalyear_id = fields.Many2one('account.fiscalyear.periods', 'Fiscal Year', select=True, track_visibility='onchange')
+    code = fields.Char('Code', size=14, tracking=True)
+    special = fields.Boolean('Opening/Closing Period', tracking=True)
+    date_start = fields.Date('From', required=True, tracking=True)
+    date_stop = fields.Date('To', required=True, tracking=True)
+    fiscalyear_id = fields.Many2one('account.fiscalyear.periods', 'Fiscal Year', select=True, tracking=True)
     company_id = fields.Many2one('res.company',string='Company',related='fiscalyear_id.company_id')
 
     def get_closest_open_date(self,dates):
@@ -155,9 +154,8 @@ class AccountMonthPeriod(models.Model):
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    @api.multi
-    def _check_lock_date(self):
-        res = super(AccountMove, self)._check_lock_date()
+    def _check_fiscalyear_lock_date(self):
+        res = super(AccountMove, self)._check_fiscalyear_lock_date()
         if res:
             for rec in self:
                 fiscal_year_obj = self.env['account.fiscalyear.periods']

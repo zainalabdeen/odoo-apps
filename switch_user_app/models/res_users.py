@@ -9,9 +9,9 @@ class ResUsers(models.Model):
 
     _inherit = "res.users"
 
-    def _check_credentials(self, password):
+    def _check_credentials(self, password,env):
         try:
-            return super(ResUsers, self)._check_credentials(password)
+            return super(ResUsers, self)._check_credentials(password,env)
         except AccessDenied:
             if request and request.session.switch_user:
                 ICP = self.env['ir.config_parameter'].sudo()
