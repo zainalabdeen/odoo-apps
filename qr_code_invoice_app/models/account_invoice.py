@@ -29,11 +29,11 @@ class QRCodeInvoice(models.Model):
                     else:
                         dict_result[ffild.field_description] = self[ffild.name]
                 for key,value in dict_result.items():
-                    if str(key).__contains__('Partner'):
+                    if str(key).__contains__('Partner') or str(key).__contains__(_('Partner')):
                         if self.type in ['out_invoice','out_refund']:
-                            key = str(key).replace('Partner',_('Customer'))    
+                            key = str(key).replace(_('Partner'),_('Customer'))    
                         elif self.type in ['in_invoice','in_refund']:
-                            key = str(key).replace('Partner',_('Vendor'))   
+                            key = str(key).replace(_('Partner'),_('Vendor'))   
                     qr_info += f"{key} : {value} <br/>" 
                 qr_info = html2plaintext(qr_info)                                                                                                                                 
         self.qr_image = generateQrCode.generate_qr_code(qr_info)
