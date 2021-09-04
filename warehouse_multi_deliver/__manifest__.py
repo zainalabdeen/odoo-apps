@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "Warehouse Multi Receipts",
+    'name': "Warehouse Multi Receipts(Multi Picking)",
 
     'summary': """
         Allow Receipt Purchase Order In Multi Picking""",
