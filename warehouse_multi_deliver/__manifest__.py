@@ -10,7 +10,7 @@
     """,
 
     'author': "Zain-Alabdin",
-    #'website': "http://my-company.com",
+    'website': "https://www.linkedin.com/in/zainalabdeen-merghani-56b7ab106",
     'category': 'Purchases',
     'version': '1.0',
 
