@@ -13,7 +13,7 @@
     ,
 
     'author': "Zain-Alabdin",
-    #'website': "www.my-company.com",
+    'website': "https://www.linkedin.com/in/zainalabdeen-merghani-56b7ab106",
 
     'category': 'Invoicing Management',
     'version': '0.3',

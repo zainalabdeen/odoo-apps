@@ -8,7 +8,7 @@
         Enable Switching User From Odoo Backend
     """,
     'author': "Zain-Alabdin",
-    #'website': "http://www.yourcompany.com",
+    'website': "https://www.linkedin.com/in/zainalabdeen-merghani-56b7ab106",
     'category': 'Extra Tools',
     'version': '0.1',
     # any module necessary for this one to work correctly
