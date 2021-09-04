@@ -5,7 +5,7 @@
     'category': 'Accounting',
     'author': 'Zain-Alabdin',
     'summary': 'Generate QR Code for Invoice',
-    #'website': 'http://www.my-company.com',
+    'website': 'https://www.linkedin.com/in/zainalabdeen-merghani-56b7ab106',
     'description': """
     -Configuration For Qr Code Type (Url,Text Information)
     -For Url It Will Open Invoice In Portal.
