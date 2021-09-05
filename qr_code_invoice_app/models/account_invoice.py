@@ -15,7 +15,7 @@ class QRCodeInvoice(models.Model):
     def _generate_qr_code(self):
         qr_info = ''
         if self.env.user.company_id.invoice_qr_type != 'by_info':
-            qr_info = request.env['ir.config_parameter'].get_param('web.base.url')
+            qr_info = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
             qr_info += self.get_portal_url()
         else:   
             if self.env.user.company_id.invoice_field_ids:
