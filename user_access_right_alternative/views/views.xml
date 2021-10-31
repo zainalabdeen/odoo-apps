@@ -1,0 +1,90 @@
+<odoo>
+  <data>
+            <!-- Form View -->
+        <record id="user_group_access_alternative_form" model="ir.ui.view">
+            <field name="name">user.group.access.alternative.form</field>
+            <field name="model">user.group.access.alternative</field>
+            <field name="arch" type="xml">
+                <form>
+                    <header>
+                        <button name="get_groups" states="draft" string="Get Groups" type="object" class="oe_highlight"/>
+                        <button name="start_granted" string="Start Access Granted" type="object"
+                         class="oe_highlight" attrs="{'invisible':['|',('new_groups_count','&lt;',1),('state','!=','draft')]}"/>
+                        <button name="stop_granted" states="start_granted" string="Stop Access Grant" type="object" class="oe_highlight"/>
+                        <button name="set_to_draft" states="stop_granted" string="Set To Draft" type="object" class="oe_highlight"/>
+                        <field name="state" widget="statusbar" nolabel="1" />
+                    </header>
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="origin_user_id"/>
+                                <field name="alternate_user_id" domain="[('id','!=',origin_user_id)]"/>
+                            </group>
+                        </group>
+                        <group>
+                          <field name="new_groups_count" invisible="1"/>
+                          <field name="new_group_ids" attrs="{'invisible':[('new_groups_count','&lt;',1)]}"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+    <!-- explicit list view definition -->
+    
+    <record model="ir.ui.view" id="user_access_right_alternative_list">
+      <field name="name">user_access_right_alternative list</field>
+      <field name="model">user.group.access.alternative</field>
+      <field name="arch" type="xml">
+        <tree>
+              <field name="origin_user_id"/>
+              <field name="alternate_user_id"/>
+              <field name="state"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="user_access_right_alternative_kanban" model="ir.ui.view">
+        <field name="name">User Group Access Alternative List</field>
+        <field name="model">user.group.access.alternative</field>
+        <field name="arch" type="xml">
+            <kanban>
+                <field name="origin_user_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div>
+                            <a name="get_form_view" type="object">
+                                <div class="oe_kanban_details">
+                                    <strong class="o_kanban_record_title">
+                                      <div>
+                                        <span class="text-muted">User:</span>
+                                        <field name="origin_user_id"/>
+                                      </div>
+                                      <div>
+                                        <span class="text-muted">Alternative User:</span></div>
+                                        <field name="alternate_user_id"/>
+                                    </strong>
+                                </div>
+                            </a>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- actions opening views on models -->
+    <record model="ir.actions.act_window" id="user_access_right_alternative_action_window">
+      <field name="name">User Access Alternative</field>
+      <field name="res_model">user.group.access.alternative</field>
+      <field name="view_mode">tree,kanban,form</field>
+    </record>
+    
+
+
+    <menuitem name="User Alternate" string="User Alternate"
+    action="user_access_right_alternative_action_window" id="user_access_right_alternative_menu_root"/>
+  
+  </data>
+</odoo>
