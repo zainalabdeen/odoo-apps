@@ -12,8 +12,7 @@ class AccountFiscalyear(models.Model):
 
     fiscal_year_id = fields.Many2one('account.fiscal.year',required=True, track_visibility='onchange')
     code = fields.Char('Code',required=True, track_visibility='onchange',default='/',readonly=True)
-    company_id = fields.Many2one('res.company',related='fiscal_year_id.company_id',store=True, required=True,
-                                 default=lambda self: self.env.user.company_id, track_visibility='onchange')
+    company_id = fields.Many2one('res.company',required=True,default=lambda self: self.env.user.company_id, track_visibility='onchange')
     date_start = fields.Date('Start Date',related='fiscal_year_id.date_from',store=True, track_visibility='onchange')
     date_stop = fields.Date('Ending Date',related='fiscal_year_id.date_to',store=True, track_visibility='onchange')
     period_ids = fields.One2many('account.month.period', 'fiscalyear_id', 'Periods', track_visibility='onchange')
@@ -65,7 +64,7 @@ class AccountFiscalyear(models.Model):
                 if fiscal_rec_end:
                     raise ValidationError(_('The end date is within other fiscal year period.'))'''
     _sql_constraints = [
-        ('fiscalyear_uniq', 'unique(fiscal_year_id)', 'The Fiscal Year must be unique For Periods!')
+        ('fiscalyear_per_company_uniq', 'unique(fiscal_year_id,company_id)', _('The Fiscal Year must be unique For Periods!'))
     ]            
 
     @api.constrains('date_start', 'date_stop', 'company_id')
@@ -127,14 +126,14 @@ class AccountMonthPeriod(models.Model):
     date_start = fields.Date('From', required=True, track_visibility='onchange')
     date_stop = fields.Date('To', required=True, track_visibility='onchange')
     fiscalyear_id = fields.Many2one('account.fiscalyear.periods', 'Fiscal Year', select=True, track_visibility='onchange')
-    company_id = fields.Many2one('res.company',string='Company',related='fiscalyear_id.company_id')
+    company_id = fields.Many2one('res.company',string='Company',related='fiscalyear_id.company_id',store=True)
 
     def get_closest_open_date(self,dates):
-        period = self.sudo().search([('date_start', '<=', dates), ('date_stop', '>=', dates),('special','=',True)])
+        period = self.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start', '<=', dates), ('date_stop', '>=', dates),('special','=',True),('company_id','=',self.env.user.company_id.id)],limit=1)
         if period:
             return dates
         else:
-            period = self.sudo().search([('date_start', '>=', dates),('special','=',True)],limit=1)
+            period = self.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start', '>=', dates),('special','=',True),('company_id','=',self.env.user.company_id.id)],limit=1)
             if period:
                 return period.date_start
             else:
@@ -142,11 +141,11 @@ class AccountMonthPeriod(models.Model):
 
 
     def get_closest_open_by_period(self,dates):
-        period = self.sudo().search([('date_start', '<=', dates), ('date_stop', '>=', dates),('special','=',True)])
+        period = self.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start', '<=', dates), ('date_stop', '>=', dates),('special','=',True),('company_id','=',self.env.user.company_id.id)],limit=1)
         if period:
             return {'date_from':period['date_start'],'date_to':period['date_stop']}
         else:
-            period = self.sudo().search([('special','=',True)],order='date_start desc',limit=1)
+            period = self.sudo().with_context(company_id=self.env.user.company_id.id).search([('special','=',True),('company_id','=',self.env.user.company_id.id)],order='date_start desc',limit=1)
             if period:
                 return {'date_from':period['date_start'],'date_to':period['date_stop']}    
             else:          
@@ -162,11 +161,11 @@ class AccountMove(models.Model):
             for rec in self:
                 fiscal_year_obj = self.env['account.fiscalyear.periods']
                 period_obj = self.env['account.month.period']
-                fiscal_rec = fiscal_year_obj.sudo().search([('date_start','<=',rec.date),('date_stop','>=',rec.date)])
+                fiscal_rec = fiscal_year_obj.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start','<=',rec.date),('date_stop','>=',rec.date),('company_id','=',self.env.user.company_id.id)],limit=1)
                 if not fiscal_rec:
                     raise ValidationError(_('The date must be within the fiscal year period'))
                 elif fiscal_rec.state == 'open':
-                    period_rec = period_obj.sudo().search([('date_start', '<=', rec.date), ('date_stop', '>=', rec.date)])
+                    period_rec = period_obj.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start', '<=', rec.date), ('date_stop', '>=', rec.date),('fiscalyear_id','=',fiscal_rec.id)],limit=1)
                     if not period_rec:
                         raise ValidationError(
                             _('The date must be within the period duration.'))
