@@ -16,7 +16,7 @@
     'website': "https://www.linkedin.com/in/zainalabdeen-merghani-56b7ab106",
 
     'category': 'Invoicing Management',
-    'version': '0.4',
+    'version': '1.0',
 
     # any module necessary for this one to work correctly
     'depends': ['account'],
