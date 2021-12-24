@@ -8,17 +8,17 @@
             <field name="arch" type="xml">
                 <form string="Fiscal year" version="7.0">
                     <header>
-                        <button name="create_periods" groups="account_fiscal_year_period.group_fiscal_year_create" states="draft" string="Create Periods" type="object" class="oe_highlight"/>
-                        <button name="open" states="draft" groups="account_fiscal_year_period.group_fiscal_year_create" string="Open" type="object" class="oe_highlight"/>
-                        <button name="done" states="open" string="Close" groups="account_fiscal_year_period.group_fiscal_year_close" type="object" class="oe_highlight" confirm="are you sure closed year and periods?"/>
-                        <button name="set_to_draft" states="open,done" groups="account_fiscal_year_period.group_fiscal_year_create" string="Set To Draft" type="object" class="oe_highlight"/>
+                        <button name="create_periods" groups="account_fiscal_year_period_enterprise.group_fiscal_year_create" states="draft" string="Create Periods" type="object" class="oe_highlight"/>
+                        <button name="open" states="draft" groups="account_fiscal_year_period_enterprise.group_fiscal_year_create" string="Open" type="object" class="oe_highlight"/>
+                        <button name="done" states="open" string="Close" groups="account_fiscal_year_period_enterprise.group_fiscal_year_close" type="object" class="oe_highlight" confirm="are you sure closed year and periods?"/>
+                        <button name="set_to_draft" states="open,done" groups="account_fiscal_year_period_enterprise.group_fiscal_year_create" string="Set To Draft" type="object" class="oe_highlight"/>
                         <field name="state" widget="statusbar" nolabel="1" statusbar_visible="draft,open" />
                     </header>
                     <sheet>
                         <group>
                             <group>
                                 <field name="code" force_save="1"/>
-                                <field name="fiscal_year_id" attrs="{'readonly':[('state','!=','draft')]}"/>
+                                <field name="fiscal_year_id" attrs="{'readonly':[('state','!=','draft')]}" domain="[('company_id','=',company_id)]"/>
                                 <field name="company_id" groups="base.group_multi_company" readonly='1'/>
                             </group>
                             <group>
@@ -28,13 +28,13 @@
                         </group>
                         <notebook>
                             <page string="Periods">
-                                <field colspan="4" name="period_ids" nolabel="1" widget="one2many_list">
+                                <field colspan="4" name="period_ids" nolabel="1" widget="one2many_list" attrs="{'readonly':[('state','!=','open')]}">
                                     <tree colors="blue:parent.state == 'draft';green:special==True;gray:special !=true"  string="Period" editable="bottom" create="false" delete="false">
                                             <field name="sequence" readonly="1"/>
                                             <field name="code" readonly="1"/>
                                             <field name="date_start" readonly="1"/>
                                             <field name="date_stop" readonly="1"/>
-                                            <field name="special"/>
+                                            <field name="special" groups="account_fiscal_year_period.group_fiscal_year_open_close"/>
                                     </tree>
                                 </field>
                                 </page>
