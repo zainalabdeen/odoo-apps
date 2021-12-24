@@ -22,5 +22,24 @@
               <field name="category_id" ref="module_category_fiscal_year"/>
           </record>
           
+        <record id="account_fiscal_year_comp_rule" model="ir.rule">
+            <field name="name">Fiscal Year multi-company</field>
+            <field name="model_id" ref="account.model_account_fiscal_year"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
+
+        <record id="account_fiscalyear_periods_comp_rule" model="ir.rule">
+            <field name="name">Fiscal Period multi-company</field>
+            <field name="model_id" ref="model_account_fiscalyear_periods"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+        
+        <record id="account_month_period_comp_rule" model="ir.rule">
+            <field name="name">Fiscal Month Period multi-company</field>
+            <field name="model_id" ref="model_account_month_period"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
+        </record>
+
     </data>
 </odoo>

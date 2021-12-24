@@ -20,10 +20,47 @@ class invoiceQrFields(models.Model):
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    invoice_qr_type = fields.Selection([('by_url','Invoice Url'),('by_info','Invoice Text Information')],default='by_url',required=True)
-    invoice_field_ids = fields.One2many('invoice.qr.fields','company_id',string="Invoice Field's")
+    def _get_default_invoice_field_ids(self):
+        field_model = self.env['ir.model.fields'].sudo()
+        return [
+                (0,0, {
+                    'sequence': 1,
+                    'field_id': field_model.search([('name','=','partner_id'),('model_id.model','=','account.invoice')]).id,
+                }),
+
+                (0,0, {
+                    'sequence': 2,
+                    'field_id': field_model.search([('name','=','partner_vat'),('model_id.model','=','account.invoice')]).id,
+                }),
+
+                (0,0, {
+                    'sequence': 3,
+                    'field_id': field_model.search([('name','=','company_id'),('model_id.model','=','account.invoice')]).id,
+                }),
+
+                (0,0, {
+                    'sequence': 4,
+                    'field_id': field_model.search([('name','=','company_vat'),('model_id.model','=','account.invoice')]).id,
+                }),
+                (0,0, {
+                    'sequence': 5,
+                    'field_id': field_model.search([('name','=','datetime_invoice'),('model_id.model','=','account.invoice')]).id,
+                }),
+                (0,0, {
+                    'sequence': 6,
+                    'field_id': field_model.search([('name','=','amount_untaxed'),('model_id.model','=','account.invoice')]).id,
+                }),
+                (0,0, {
+                    'sequence': 7,
+                    'field_id': field_model.search([('name','=','amount_total'),('model_id.model','=','account.invoice')]).id,
+                }),
+            ]
+
+    invoice_qr_type = fields.Selection([('by_url','Invoice Url'),('by_info','Invoice Text Information'),('by_encoded_info','Invoice Encoded Info')],default='by_encoded_info',required=True)
+    invoice_field_ids = fields.One2many('invoice.qr.fields','company_id',string="Invoice Field's",default=_get_default_invoice_field_ids)
 
     @api.constrains('invoice_qr_type','invoice_field_ids')    
     def check_invoice_field_ids(self):
-        if self.invoice_qr_type == 'by_info' and not self.invoice_field_ids:
-            raise UserError(_("Please Add Invoice Field's"))
+        for rec in self:
+            if rec.invoice_qr_type == 'by_info' and not rec.invoice_field_ids:
+                raise UserError(_("Please Add Invoice Field's"))

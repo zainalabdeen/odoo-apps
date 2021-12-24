@@ -123,6 +123,11 @@ msgid "Partner Tax ID"
 msgstr "الرقم الضريبي لـ الشريك"
 
 #. module: qr_code_invoice_app
+#: model:ir.model.fields,field_description:qr_code_invoice_app.field_account_invoice__datetime_invoice
+msgid "Invoice DateTime"
+msgstr "تاريخ الفاتـورة"
+
+#. module: qr_code_invoice_app
 #: code:addons/qr_code_invoice_app/models/res_config_settings.py:29
 #, python-format
 msgid "Please Add Invoice Field's"

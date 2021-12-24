@@ -120,9 +120,9 @@ class AccountMonthPeriod(models.Model):
     _inherit = ['mail.thread']
     _order = "date_start asc"
 
-    sequence = fields.Integer('Period Sequence', default=1)
-    code = fields.Char('Code', size=14, track_visibility='onchange')
-    special = fields.Boolean('Opening/Closing Period', track_visibility='onchange')
+    sequence = fields.Integer('Sequence', default=1)
+    code = fields.Char('Code',track_visibility='onchange')
+    special = fields.Boolean('Opening/Closing', track_visibility='onchange')
     date_start = fields.Date('From', required=True, track_visibility='onchange')
     date_stop = fields.Date('To', required=True, track_visibility='onchange')
     fiscalyear_id = fields.Many2one('account.fiscalyear.periods', 'Fiscal Year', select=True, track_visibility='onchange')
@@ -161,11 +161,11 @@ class AccountMove(models.Model):
             for rec in self:
                 fiscal_year_obj = self.env['account.fiscalyear.periods']
                 period_obj = self.env['account.month.period']
-                fiscal_rec = fiscal_year_obj.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start','<=',rec.date),('date_stop','>=',rec.date),('company_id','=',self.env.user.company_id.id)],limit=1)
+                fiscal_rec = fiscal_year_obj.sudo().with_context(company_id=rec.company_id.id).search([('date_start','<=',rec.date),('date_stop','>=',rec.date),('company_id','=',rec.company_id.id)],limit=1)
                 if not fiscal_rec:
-                    raise ValidationError(_('The date must be within the fiscal year period'))
+                    raise ValidationError(_('The Date Must Be Within Defined Fiscal Year Period'))
                 elif fiscal_rec.state == 'open':
-                    period_rec = period_obj.sudo().with_context(company_id=self.env.user.company_id.id).search([('date_start', '<=', rec.date), ('date_stop', '>=', rec.date),('fiscalyear_id','=',fiscal_rec.id)],limit=1)
+                    period_rec = period_obj.sudo().with_context(company_id=rec.company_id.id).search([('date_start', '<=', rec.date), ('date_stop', '>=', rec.date),('fiscalyear_id','=',fiscal_rec.id)],limit=1)
                     if not period_rec:
                         raise ValidationError(
                             _('The date must be within the period duration.'))
