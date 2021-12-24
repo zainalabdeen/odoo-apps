@@ -29,5 +29,10 @@
     "images":  ['static/description/icon.png'],
     'installable': True,
     'application': True,
+    'assets': {
+        'web.assets_backend': [
+            'switch_user_app/static/src/js/user_menu.js',
+        ],
+    },
     'license': "AGPL-3",
 }

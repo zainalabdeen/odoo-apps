@@ -126,7 +126,7 @@ class DeliverToLine(models.Model):
             'propagate_date': self.purchase_order_line.propagate_date,
             'propagate_date_minimum_delta': self.purchase_order_line.propagate_date_minimum_delta,
             'description_picking': description_picking,
-            'propagate_cancel': self.propagate_cancel,
+            'propagate_cancel': self.purchase_order_line.propagate_cancel,
             'route_ids': self.picking_type_id.warehouse_id and [(6, 0, [x.id for x in self.picking_type_id.warehouse_id.route_ids])] or [],
             'warehouse_id': self.picking_type_id.warehouse_id.id,
         }
