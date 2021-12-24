@@ -17,7 +17,7 @@
                                 options='{"no_open": True, "no_create_edit": True}'/>
                                 <field name="name"/>
                                 <field name="product_id" readonly="1" force_save="1"/>
-                                <field name="picking_type_id" />
+                                <field name="picking_type_id" domain="[('company_id','=',parent.company_id),('code','=','incoming')]"/>
                                 <field name="requsted_qty" />
                                 <field name="qty_received" readonly="1"/>
                             </tree>  

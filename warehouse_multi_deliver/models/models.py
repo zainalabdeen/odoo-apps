@@ -71,12 +71,14 @@ class DeliverToLine(models.Model):
     purchase_order_line = fields.Many2one('purchase.order.line',required=True)
     product_id = fields.Many2one('product.product',required=True,related='purchase_order_line.product_id')
     requsted_qty = fields.Integer(required=True)
-    picking_type_id = fields.Many2one('stock.picking.type', 'Receipt In',required=True,domain="[('code','=','incoming')]")
+    picking_type_id = fields.Many2one('stock.picking.type', 'Receipt In',required=True)
     order_id = fields.Many2one('purchase.order', string='Order Reference', index=True, required=True, ondelete='cascade')
     state = fields.Selection(related='order_id.state', store=True, readonly=False)
     move_ids = fields.One2many('stock.move', 'deliver_to_id', string='Reservation', readonly=True, ondelete='set null', copy=False)
     orderpoint_id = fields.Many2one('stock.warehouse.orderpoint', 'Orderpoint')
     qty_received = fields.Float("Received Qty", compute='_compute_qty_received', compute_sudo=True, store=True, digits='Product Unit of Measure')
+    propagate_date = fields.Boolean(string="Propagate Rescheduling", help='The rescheduling is propagated to the next move.')
+    propagate_date_minimum_delta = fields.Integer(string='Reschedule if Higher Than', help='The change must be higher than this value to be propagated')
 
     @api.onchange('purchase_order_line')
     def _onchange_purchase_order_line(self):
@@ -124,7 +126,7 @@ class DeliverToLine(models.Model):
             'propagate_date': self.purchase_order_line.propagate_date,
             'propagate_date_minimum_delta': self.purchase_order_line.propagate_date_minimum_delta,
             'description_picking': description_picking,
-            'propagate_cancel': self.propagate_cancel,
+            'propagate_cancel': self.purchase_order_line.propagate_cancel,
             'route_ids': self.picking_type_id.warehouse_id and [(6, 0, [x.id for x in self.picking_type_id.warehouse_id.route_ids])] or [],
             'warehouse_id': self.picking_type_id.warehouse_id.id,
         }
