@@ -33,5 +33,5 @@
     "images":  ['static/description/icon.png'],
     'installable': True,
     'application': True,
-    #'license': "AGPL-3",
+    'license': "Other proprietary"
 }
